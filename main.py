@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 
 from sqlmodel import create_engine, Session, SQLModel, select, Field
 
-from app.models import Case, Employee
+from app.models import Case, Employee, CaseStatus, Modality
 from app.database import engine, get_session
 from app.routers import cases, employees
 
@@ -24,18 +24,18 @@ async def lifespan(app: FastAPI):
                 Case(
                     id=1,
                     patientName="Noah Burnham",
-                    modality="CT",
+                    modality=Modality.CT,
                     studyDate=datetime.now(),
-                    status="PENDING",
+                    status=CaseStatus.PENDING,
                     report="",
                     claimedAt=datetime.now(),
                 ),
                 Case(
                     id=2,
                     patientName="Charles Charlie",
-                    modality="US",
+                    modality=Modality.US,
                     studyDate=datetime.now(),
-                    status="IN_PROGRESS",
+                    status=CaseStatus.IN_PROGRESS,
                     report="",
                     claimedAt=datetime.now(),
                     claimedBy=15

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import Case, ReportSubmit, Employee, CaseClaim
+from app.models import Case, ReportSubmit, Employee, CaseClaim, CaseStatus, Modality
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 
@@ -43,7 +43,7 @@ async def claim_case(id: int, claimedBy: CaseClaim, session: SessionDep):
     case = session.get(Case, id)
     if not case:
         raise HTTPException(status_code=404, detail="case not found")
-    case.status = "IN_PROGRESS"
+    case.status = CaseStatus.IN_PROGRESS
     case.claimedAt = datetime.now()
     employee = session.get(Employee, claimedBy.username)
     case.claimedBy = employee.id
@@ -63,7 +63,7 @@ async def report_case(id: int, report: ReportSubmit, session: SessionDep):
     case = session.get(Case, id)
     if not case:
         raise HTTPException(status_code=404, detail="case not found")
-    case.status = "COMPLETED"
+    case.status = CaseStatus.COMPLETED
     case.report = report.report
     session.add(case)
     session.commit()
