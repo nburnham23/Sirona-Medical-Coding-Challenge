@@ -49,7 +49,7 @@ async def get_cases(session: SessionDep, status: CaseStatus | None = None, claim
         query = query.where(Case.claimedBy == employee.id)
     query = query.order_by(Case.studyDate)
     cases = session.exec(query).all()
-    return {"data": [_case_to_read(case, session) for case in cases]}
+    return [_case_to_read(case, session) for case in cases]
 
 
 """
@@ -61,7 +61,7 @@ async def get_case(session: SessionDep, id: int):
     case = session.get(Case, id)
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
-    return {"data": _case_to_read(case, session)}
+    return _case_to_read(case, session)
 
 
 """
@@ -91,7 +91,7 @@ async def claim_case(id: int, body: CaseClaim, session: SessionDep):
     session.add(case)
     session.commit()
     session.refresh(case)
-    return {"data": _case_to_read(case, session)}
+    return _case_to_read(case, session)
 
 """
 report_case transitions a case from IN_PROGRESS to COMPLETED and stores the report text to the case
@@ -122,4 +122,4 @@ async def report_case(id: int, body: ReportSubmit, session: SessionDep):
     session.add(case)
     session.commit()
     session.refresh(case)
-    return {"data": _case_to_read(case, session)}
+    return _case_to_read(case, session)

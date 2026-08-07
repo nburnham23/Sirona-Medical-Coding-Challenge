@@ -26,7 +26,7 @@ get_employees returns all the employees in the database
 @router.get("")
 async def get_employees(session: SessionDep):
     data = session.exec(select(Employee)).all()
-    return {"data": data}
+    return data
 
 """
 post_employee creates a new employee with the given username, which must be unique
@@ -43,7 +43,7 @@ async def post_employee(session: SessionDep, employee: EmployeeCreate):
         session.rollback()
         raise HTTPException(status_code=409, detail="username already taken")
     session.refresh(db_employee)
-    return {"data": db_employee}
+    return db_employee
 
 """
 update_employee updates the employees username by the id. the username must be unique
@@ -63,7 +63,7 @@ async def update_employee(id: int, session: SessionDep, employee: EmployeeCreate
         session.rollback()
         raise HTTPException(status_code=409, detail="username already taken")
     session.refresh(db_employee)
-    return {"data": db_employee}
+    return db_employee
 
 """
 delete_employee deletes the employee by their id
