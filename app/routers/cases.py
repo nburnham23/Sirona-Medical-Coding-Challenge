@@ -35,8 +35,7 @@ the get_cases function returns all cases with a specified status and/or employee
 Results are ordered by ascending studyDate
 """
 @router.get("")
-async def get_cases(session: SessionDep, status: str = None, claimedBy: str = None):
-    # TODO: sort by ascending studyDate and add filtering
+async def get_cases(session: SessionDep, status: CaseStatus | None = None, claimedBy: str | None = None):
     query = select(Case)
     if status is not None:
         query = query.where(Case.status == status)
@@ -47,11 +46,9 @@ async def get_cases(session: SessionDep, status: str = None, claimedBy: str = No
         if not employee:
             # employee has no cases
             return {"data": []}
-        query = query.where(Case.claimedBy == claimedBy)
+        query = query.where(Case.claimedBy == employee.id)
     query = query.order_by(Case.studyDate)
     cases = session.exec(query).all()
-
-    data = session.exec(select(Case)).all()
     return {"data": [_case_to_read(case, session) for case in cases]}
 
 
@@ -72,7 +69,7 @@ claim_case transitions a case from PENDING to IN_PROGRESS, sets claimedAt to the
 and sets claimedBy to the employee id associated with the username
 """
 @router.post("/{id}/claim")
-async def claim_case(id: int, claimedBy: CaseClaim, session: SessionDep):
+async def claim_case(id: int, body: CaseClaim, session: SessionDep):
     case = session.get(Case, id)
     if not case:
         raise HTTPException(status_code=404, detail="case not found")
@@ -99,9 +96,6 @@ async def claim_case(id: int, claimedBy: CaseClaim, session: SessionDep):
 """
 report_case transitions a case from IN_PROGRESS to COMPLETED and stores the report text to the case
 """
-#TODO: raise error if case not in IN_PROGRESS, report body is missing/empty,
-# username missing
-# username doesn't match claimedBy
 @router.post("/{id}/report")
 async def report_case(id: int, body: ReportSubmit, session: SessionDep):
     case = session.get(Case, id)
